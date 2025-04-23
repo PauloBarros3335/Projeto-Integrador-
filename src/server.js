@@ -20,4 +20,13 @@ const app = require("./app"); // Importa o app DEPOIS de carregar .env
 
 const PORT = process.env.PORT || 5000;
 
+console.log("Rotas registradas:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(
+      `${Object.keys(r.route.methods)[0].toUpperCase()} ${r.route.path}`
+    );
+  }
+});
+
 app.listen(PORT, () => console.log(`Servidor iniciado na porta ${PORT}`));
