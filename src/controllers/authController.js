@@ -1,61 +1,55 @@
+// src/controllers/authController.js
 const Usuario = require("../models/Usuario");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Função para registrar um novo usuário
+// Certifique-se que estas funções estão sendo exportadas
 const registerUser = async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
-
-    // Verificação básica
-    if (!nome || !email || !senha) {
-      return res
-        .status(400)
-        .json({ message: "Todos os campos são obrigatórios." });
-    }
-
-    // Verifica se o e-mail já está cadastrado
-    const usuarioExistente = await Usuario.findOne({ email });
-    if (usuarioExistente) {
-      return res
-        .status(400)
-        .json({ message: "Usuário já cadastrado com este e-mail." });
-    }
-
-    // Hash da senha
-    const salt = await bcrypt.genSalt(10);
-    const senhaHash = await bcrypt.hash(senha, salt);
-
-    // Criação do usuário
-    const novoUsuario = new Usuario({
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    const usuario = await Usuario.create({
       nome,
       email,
-      senha: senhaHash,
+      senha: hashedPassword,
     });
 
-    await novoUsuario.save();
-
-    // (Opcional) Gerar token JWT
-    const token = jwt.sign({ id: novoUsuario._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    const token = jwt.sign({ id: usuario._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
     });
 
-    // Resposta
-    res.status(201).json({
-      message: "Usuário registrado com sucesso!",
-      usuario: {
-        id: novoUsuario._id,
-        nome: novoUsuario.nome,
-        email: novoUsuario.email,
-      },
-      token, // Se quiser já logar ao registrar
-    });
+    res.status(201).json({ usuario, token });
   } catch (error) {
-    res.status(500).json({
-      message: "Erro no servidor.",
-      error: error.message,
-    });
+    res.status(400).json({ error: error.message });
   }
 };
 
-module.exports = { registerUser };
+const loginUser = async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+    const usuario = await Usuario.findOne({ email });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) {
+      return res.status(401).json({ error: "Senha incorreta" });
+    }
+
+    const token = jwt.sign({ id: usuario._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.json({ usuario, token });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Exportação CORRETA (isto é o que estava faltando)
+module.exports = {
+  registerUser,
+  loginUser,
+};
