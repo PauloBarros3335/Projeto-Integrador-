@@ -1,23 +1,36 @@
-// backend/src/config/db.js
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
+    // Debug: Verifica se a URI está sendo carregada
+    console.log("Tentando conectar ao MongoDB...");
+
     if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI não disponível para a função connectDB.");
+      throw new Error(
+        "❌ MONGO_URI não encontrada. Verifique seu arquivo .env"
+      );
     }
 
-    // Adicione AQUI o console.log para debug
-    console.log(
-      "Conectando ao MongoDB Atlas com URI:",
-      process.env.MONGO_URI.replace(/\/\/[^@]+@/, "//<usuário>:<senha>@")
-    ); // Ofusca credenciais
+    // Opções recomendadas pela documentação do Mongoose
+    const options = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
 
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB conectado com sucesso!");
+    await mongoose.connect(process.env.MONGO_URI, options);
+
+    console.log("✅ MongoDB conectado com sucesso!");
+    console.log(`📊 Banco: ${mongoose.connection.name}`);
+    console.log(`🛠️  Host: ${mongoose.connection.host}`);
   } catch (error) {
-    console.error("Erro ao conectar ao MongoDB:", error.message);
-    process.exit(1);
+    console.error("❌ ERRO DE CONEXÃO:", error.message);
+    console.error("💡 Dica: Verifique:");
+    console.error("- Se seu IP está autorizado no MongoDB Atlas");
+    console.error("- Se o usuário/senha estão corretos");
+    console.error("- Se o cluster está online");
+    process.exit(1); // Encerra o processo com erro
   }
 };
 

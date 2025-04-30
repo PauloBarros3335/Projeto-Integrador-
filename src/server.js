@@ -1,23 +1,19 @@
-require("dotenv").config({ path: "./.env" });
-const app = require("./app");
-const PORT = process.env.PORT || 5000;
+// Carrega as variáveis de ambiente PRIMEIRO
+require("dotenv").config({ path: `${__dirname}/../.env` });
 
-// Debug: Verifique as rotas após a inicialização
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-
-  // Opcional: Listar rotas registradas (só funciona após app.listen)
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Rotas disponíveis:");
-    app._router.stack.forEach((middleware) => {
-      if (middleware.route) {
-        console.log(
-          `${Object.keys(middleware.route.methods)[0].toUpperCase()} ${
-            middleware.route.path
-          }`
-        );
-      }
-    });
-  }
+// Debug: Verifica se as variáveis estão carregadas
+console.log("Variáveis carregadas:", {
+  MONGO_URI: process.env.MONGO_URI ? "***" : "NÃO ENCONTRADA",
+  PORT: process.env.PORT || "5000 (padrão)",
 });
 
+const app = require("./app");
+const connectDB = require("./config/db");
+
+// Conecta ao banco e inicia o servidor
+connectDB().then(() => {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  });
+});

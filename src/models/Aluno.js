@@ -1,3 +1,32 @@
+// const mongoose = require("mongoose");
+
+// const AlunoSchema = new mongoose.Schema(
+//   {
+//     nome_completo: {
+//       type: String,
+//       required: [true, "O nome completo é obrigatório."],
+//       trim: true,
+//     },
+//     email: {
+//       type: String,
+//       required: [true, "O e-mail é obrigatório."],
+//       unique: true,
+//       lowercase: true,
+//       trim: true,
+//       match: [/.+\@.+\..+/, "E-mail inválido."],
+//     },
+//     cpf: {
+//       type: String,
+//       required: [true, "O CPF é obrigatório."],
+//       unique: true,
+//       trim: true,
+//     },
+//   },
+//   { timestamps: true }
+// );
+
+// module.exports = mongoose.model("Aluno", AlunoSchema);
+
 const mongoose = require("mongoose");
 
 const AlunoSchema = new mongoose.Schema(
@@ -22,6 +51,7 @@ const AlunoSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      match: [/.+\@.+\..+/, "E-mail inválido."],
     },
   },
   { timestamps: true }
